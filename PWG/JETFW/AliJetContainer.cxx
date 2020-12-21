@@ -12,8 +12,12 @@
  * about the suitability of this software for any purpose. It is          *
  * provided "as is" without express or implied warranty.                  *
  **************************************************************************/
+#include <iostream>
+#include <memory>
 
 #include <TClonesArray.h>
+#include <TObjArray.h>
+#include <TObjString.h>
 
 #include "AliVEvent.h"
 #include "AliLog.h"
@@ -34,6 +38,9 @@ ClassImp(AliJetContainer);
  */
 AliJetContainer::AliJetContainer():
   AliParticleContainer(),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -75,6 +82,9 @@ AliJetContainer::AliJetContainer():
  */
 AliJetContainer::AliJetContainer(const char *name):
   AliParticleContainer(name),
+  fJetType(kUndefinedJetType),
+  fJetAlgorithm(undefined_jet_algorithm),
+  fRecombinationScheme(undefined_scheme),
   fJetAcceptanceType(0),
   fJetRadius(0),
   fRhoName(),
@@ -127,6 +137,9 @@ AliJetContainer::AliJetContainer(const char *name):
 AliJetContainer::AliJetContainer(EJetType_t jetType, EJetAlgo_t jetAlgo, ERecoScheme_t recoScheme, Double_t radius,
     AliParticleContainer* partCont, AliClusterContainer* clusCont, TString tag):
   AliParticleContainer(GenerateJetName(jetType, jetAlgo, recoScheme, radius, partCont, clusCont, tag)),
+  fJetType(jetType),
+  fJetAlgorithm(jetAlgo),
+  fRecombinationScheme(recoScheme),
   fJetAcceptanceType(0),
   fJetRadius(radius),
   fRhoName(),
@@ -170,6 +183,18 @@ void AliJetContainer::SetArray(const AliVEvent *event)
   // Set jet array
 
   AliEmcalContainer::SetArray(event);
+}
+
+void AliJetContainer::UpdateArrayName(){
+  TString tag = "Jet";
+  if(fClArrayName.Length()) {
+    // obtain tag from previous name
+    std::unique_ptr<TObjArray> arrnametoks(fClArrayName.Tokenize("_")); 
+    tag = static_cast<TObjString *>(arrnametoks->At(0))->String();
+  }
+  TString updateName = GenerateJetName(fJetType, fJetAlgorithm, fRecombinationScheme, fJetRadius, fParticleContainer, fClusterContainer, tag);
+  std::cout << "[AliJetContainer] Update collection name of the jet container to " << updateName << std::endl;
+  SetArrayName(updateName);
 }
 
 /**
@@ -632,6 +657,12 @@ Double_t AliJetContainer::GetLeadingHadronPt(const AliEmcalJet *jet) const
 /**
  * Retrieve the 4-momentum of leading hadron of the jet.
  * The mass hypothesis is always set to the pion mass (0.139 GeV/c^2).
+ * NOTE: The cluster energy used to calculate the momentum will always be
+ *       the _raw_ energy because the cluster container is not used. There are a
+ *       number of possible alternative approaches to use the user selected energy
+ *       (such as the hadronic corrected energy). One possible alternative which
+ *       uses the cluster energy selected during jet finding is to access the
+ *       leading AliEmcalClusterJetConstituent.
  * @param[out] mom Reference to a TLorentzVector object where the result is returned
  * @param[in] jet Pointer to a AliEmcalJet object
  */
@@ -881,12 +912,15 @@ TString AliJetContainer::GenerateJetName(EJetType_t jetType, EJetAlgo_t jetAlgo,
   case kNeutralJet:
     typeString = "Neutral";
     break;
+  case kUndefinedJetType:
+    typeString = "Undefined";
+    break;
   }
 
   TString radiusString = TString::Format("R%03.0f", radius*100.0);
 
   TString trackString;
-  if (jetType != kNeutralJet && partCont) {
+  if (partCont) { //Neutral jets on particle level, can have praticle containers
     trackString = "_" + TString(partCont->GetTitle());
   }
 

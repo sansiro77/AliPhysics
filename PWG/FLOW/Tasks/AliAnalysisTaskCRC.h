@@ -25,6 +25,7 @@
 
 #include "AliAnalysisTaskSE.h"
 #include "AliFlowCommonConstants.h"
+#include "TGrid.h"
 
 class TString;
 class TList;
@@ -44,7 +45,8 @@ public:
   virtual void UserCreateOutputObjects();
   virtual void UserExec(Option_t *option);
   virtual void Terminate(Option_t *);
-
+  virtual void NotifyRun();
+  
   // Common:
   void SetBookOnlyBasicCCH(Bool_t const bobcch) {this->fBookOnlyBasicCCH = bobcch;};
   Bool_t GetBookOnlyBasicCCH() const {return this->fBookOnlyBasicCCH;};
@@ -122,6 +124,8 @@ public:
   Bool_t GetUseZDCESEMulWeights() const {return this->fUseZDCESEMulWeights;};
   void SetUseZDCESESpecWeights(Bool_t const uPhiEtaW) {this->fUseZDCESESpecWeights = uPhiEtaW;};
   Bool_t GetUseZDCESESpecWeights() const {return this->fUseZDCESESpecWeights;};
+  void SetCutMultiplicityOutliers(Bool_t const uPhiEtaW) {this->fCutMultiplicityOutliers = uPhiEtaW;};
+  Bool_t GetCutMultiplicityOutliers() const {return this->fCutMultiplicityOutliers;};
 
   // Event weights:
   void SetMultiplicityWeight(const char *multiplicityWeight) {*this->fMultiplicityWeight = multiplicityWeight;};
@@ -258,7 +262,14 @@ public:
   void SetZDCGainAlpha( Float_t a ) { fZDCGainAlpha = a; }
   void SetUseTracklets(Bool_t const cCRC) {this->fUseTracklets = cCRC;};
   void StoreExtraHistoForSubSampling(Bool_t b) {this->fStoreExtraHistoForSubSampling = b;};
+  //@Shi set store QA for diff event planes
+  void SetStoreQAforDiffEventPlanes(Bool_t const cCRC) {this->fStoreQAforDiffEventPlanes = cCRC;};
+  Bool_t GetStoreQAforDiffEventPlanes() const {return this->fStoreQAforDiffEventPlanes;};
 
+  //@Shi set histogram for recentering
+  void SetZDCCalibListFinalCommonPart(TList* const kList) {this->fZDCCalibListFinalCommonPart = (TList*)kList->Clone();};
+  TList* GetZDCCalibListFinalCommonPart() const {return this->fZDCCalibListFinalCommonPart;};
+  
 private:
   AliAnalysisTaskCRC(const AliAnalysisTaskCRC& aatqc);
   AliAnalysisTaskCRC& operator=(const AliAnalysisTaskCRC& aatqc);
@@ -305,6 +316,7 @@ private:
   Bool_t fUsePhiEtaCuts;              // use phi,eta cuts (for NUA)
   Bool_t fUseZDCESEMulWeights;        // use ZDC-ESE mult. weights
   Bool_t fUseZDCESESpecWeights;       // use ZDC-ESE mult. weights
+  Bool_t fCutMultiplicityOutliers;    // cut on reference multiplicity
   TList *fWeightsList;                // list with weights
   // Event weights:
   TString *fMultiplicityWeight;       // event-by-event weights for multiparticle correlations ("combinations","unit" or "multiplicity")
@@ -345,6 +357,7 @@ private:
   Bool_t fVtxRbR;
   Bool_t fUseNUAforCRC;
   Bool_t fUseCRCRecenter;
+  Bool_t fStoreQAforDiffEventPlanes; //@Shi
   Double_t fCRCEtaMin;
   Double_t fCRCEtaMax;
   Int_t fnCenBin;
@@ -378,8 +391,10 @@ private:
   Int_t fMinMulZN;
   Float_t fMaxDevZN;
   Float_t fZDCGainAlpha;
-
-  ClassDef(AliAnalysisTaskCRC,13);
+  //@Shi ZDC calib recenter TList
+  TList *fZDCCalibListFinalCommonPart; //
+  
+  ClassDef(AliAnalysisTaskCRC,15);
 };
 
 //================================================================================================================

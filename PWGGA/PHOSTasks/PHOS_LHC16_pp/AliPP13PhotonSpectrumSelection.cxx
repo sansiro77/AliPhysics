@@ -36,10 +36,10 @@ void AliPP13PhotonSpectrumSelection::InitSelectionHistograms()
 
 	this->SetTitle(Form("%s ## CPV = %.1f cm, Disp = %1.f cm", this->GetTitle(), fDistanceCPV, fDispersionCut));
 
-	fSpectrum     = new AliPP13DetectorHistogram(new TH1F("hClusterPt_",               "Cluster p_{T}, ; cluster p_{T}, GeV/c; counts", nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
-	fSpectrumCPV  = new AliPP13DetectorHistogram(new TH1F("hClusterPt_cpv_",      Form("Cluster p_{T} with CPV cut %.1f cm, ; cluster p_{T}, GeV/c; counts", fDistanceCPV) , nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
-	fSpectrumDisp = new AliPP13DetectorHistogram(new TH1F("hClusterPt_disp_",     Form("Cluster p_{T} with dispersion cut %.1f cm, ; cluster p_{T}, GeV/c; counts", fDispersionCut), nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
-	fSpectrumBoth = new AliPP13DetectorHistogram(new TH1F("hClusterPt_cpv_disp_", Form("Cluster p_{T} with CPV %.1f cm and dispersion %.1f cm cuts, ; cluster p_{T}, GeV/c; counts", fDistanceCPV, fDispersionCut), nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fSpectrum     = new AliPP13DetectorHistogram(new TH1F("hClusterPt_",               "Cluster p_{T}, ; cluster p_{T} (GeV/#it{c}); counts", nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fSpectrumCPV  = new AliPP13DetectorHistogram(new TH1F("hClusterPt_cpv_",      Form("Cluster p_{T} with CPV cut %.1f cm, ; cluster p_{T} (GeV/#it{c}); counts", fDistanceCPV) , nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fSpectrumDisp = new AliPP13DetectorHistogram(new TH1F("hClusterPt_disp_",     Form("Cluster p_{T} with dispersion cut %.1f cm, ; cluster p_{T} (GeV/#it{c}); counts", fDispersionCut), nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
+	fSpectrumBoth = new AliPP13DetectorHistogram(new TH1F("hClusterPt_cpv_disp_", Form("Cluster p_{T} with CPV %.1f cm and dispersion %.1f cm cuts, ; cluster p_{T} (GeV/#it{c}); counts", fDistanceCPV, fDispersionCut), nPt, ptMin, ptMax), fListOfHistos, AliPP13DetectorHistogram::kModules);
 
 
 	for(Int_t i = 0; i < fListOfHistos->GetEntries(); ++i)
@@ -59,18 +59,19 @@ void AliPP13PhotonSpectrumSelection::FillClusterHistograms(const AliVCluster * c
 	TLorentzVector p;
 	clus->GetMomentum(p, eflags.vtxBest);
 
-	fSpectrum->FillAll(sm, sm, p.Pt());
+	Float_t eff = 1. / fWeights->TofEfficiency(p.E());
+	fSpectrum->FillAll(sm, sm, p.Pt(), eff);
 
 	Bool_t cpv = clus->GetEmcCpvDistance() > fDistanceCPV;
 	if (cpv)
-		fSpectrumCPV->FillAll(sm, sm, p.Pt());
+		fSpectrumCPV->FillAll(sm, sm, p.Pt(), eff);
 
 	Bool_t disp = TestLambda(clus->GetM20(), clus->GetM02(), fDispersionCut);
 
 	if (disp)
-		fSpectrumDisp->FillAll(sm, sm, p.Pt());
+		fSpectrumDisp->FillAll(sm, sm, p.Pt(), eff);
 
 	if (cpv && disp)
-		fSpectrumBoth->FillAll(sm, sm, p.Pt());
+		fSpectrumBoth->FillAll(sm, sm, p.Pt(), eff);
 
 }

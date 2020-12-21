@@ -22,6 +22,7 @@ include_directories(${AliPhysics_SOURCE_DIR}/PWGHF/hfe)
 
 # Additional includes - alphabetical order except ROOT
 include_directories(${ROOT_INCLUDE_DIRS}
+                    $ENV{KFPARTICLE_ROOT}/include
                     ${AliPhysics_SOURCE_DIR}/CORRFW
                     ${AliPhysics_SOURCE_DIR}/OADB
                     ${AliPhysics_SOURCE_DIR}/PWG/CaloTrackCorrBase
@@ -32,7 +33,8 @@ include_directories(${ROOT_INCLUDE_DIRS}
                     ${AliPhysics_SOURCE_DIR}/PWG/TRD
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrections
                     ${AliPhysics_SOURCE_DIR}/PWGPP/EVCHAR/FlowVectorCorrections/QnCorrectionsInterface
-		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF)
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF
+		    ${AliPhysics_SOURCE_DIR}/PWGHF/vertexingHF/charmFlow)
 
 # Sources - alphabetical order
 set(SRCS
@@ -87,6 +89,7 @@ set(SRCS
   AliHFEpidObject.cxx
   AliAnalysisTaskEHCorrel.cxx
   AliAnalysisTaskFlowTPCEMCalEP.cxx
+  AliAnalysisTaskFlowTPCEMCalRun2.cxx
   AliAnalysisTaskHFECal.cxx 
   AliAnalysisTaskEMCalHFEpA.cxx 
   AliAnalysisTaskHFEpACorrelation.cxx
@@ -116,6 +119,10 @@ set(SRCS
   AliAnalysisTaskBeautyCal.cxx
   AliAnalysisTaskTPCCalBeauty.cxx
   AliAnalysisTaskFlowITSTPCTOFQCSP.cxx
+  AliAnalysisTaskHFEIPDistribution.cxx
+  AliAnalysisTaskHFEBeautyMCTemplates.cxx
+  AliAnalysisTaskHFEBeautyMCTemplatesRun2.cxx
+  AliAnalysisTaskHFEIPCorrection.cxx
   AliAnalysisTaskHFEMulti.cxx
   AliAnalysisTaskHFEMultiplicity.cxx
   AliAnalysisTaskHFEtemplate.cxx
@@ -124,7 +131,19 @@ set(SRCS
   AliAnalysisTaskHFEEfficiency.cxx
   AliAnalysisTaskHaHFECorrel.cxx
   AliAnalysisHFETPCTOFNew.cxx
-  AliAnalysisHFETPCTOFBeauty.cxx	
+  AliAnalysisHFETPCTOFBeauty.cxx
+  AliAnalysisHFEppTPCTOFBeauty.cxx
+  AliAnalysisHFEppTPCTOFBeauty5TeVNew.cxx	
+  AliAnalysisTaskCaloHFEpPbRun2.cxx
+  AliAnalysisTaskHFEmultTPCTOF.cxx
+  AliAnalysisTaskCaloHFEpp.cxx
+  AliAnalysisTaskHFEBESpectraEMC.cxx
+  AliAnalysisTaskHFETPCTOFMultiplicity.cxx
+  AliAnalysisTaskQAHFE.cxx
+  AliAnalysisTask_QA_EMCALElectrons.cxx
+  AliAnalysisTaskHFEmultTPCEMCAL.cxx
+  AliAnalysisTaskHFEBeautyMultiplicity.cxx 
+  AliAnalysisHFEppEMCalBeauty.cxx
   )
 
 # Headers from sources
@@ -140,7 +159,7 @@ add_library_tested(${MODULE} SHARED  ${SRCS} G__${MODULE}.cxx)
 
 # Generate the ROOT map
 # Dependecies
-set(LIBDEPS OADB ANALYSISalice CORRFW PWGflowTasks PWGTRD MLP PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF)
+set(LIBDEPS OADB ANALYSISalice CORRFW PWGflowTasks PWGTRD MLP PWGPPevcharQn PWGPPevcharQnInterface PWGHFvertexingHF KFParticle)
 generate_rootmap("${MODULE}" "${LIBDEPS}" "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}LinkDef.h")
 
 # Generate a PARfile target for this library
@@ -148,6 +167,7 @@ add_target_parfile(${MODULE} "${SRCS}" "${HDRS}" "${MODULE}LinkDef.h" "${LIBDEPS
 
 # Linking the library
 target_link_libraries(${MODULE} ${LIBDEPS})
+target_link_libraries(${MODULE} \-L$ENV{KFPARTICLE_ROOT}/lib ${LIBDEPS})
 
 # Public include folders that will be propagated to the dependecies
 target_include_directories(${MODULE} PUBLIC ${incdirs})

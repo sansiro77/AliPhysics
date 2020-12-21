@@ -1,6 +1,7 @@
 #ifndef ALIPICOHEADERV0_H
 #define ALIPICOHEADERV0_H
 
+#include <TObjString.h>
 #include <TNamed.h>
 
 #include <TMap.h>
@@ -37,7 +38,7 @@ class AliPicoHeaderV0 : public TNamed {
 //=============================================================================
 
   void Reset();
-  void SetEventInfo(AliInputEventHandler* const pH);
+  void SetEventInfo(AliVEventHandler* const pH);
 //=============================================================================
 
  private :

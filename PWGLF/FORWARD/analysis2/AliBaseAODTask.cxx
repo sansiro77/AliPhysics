@@ -13,6 +13,7 @@
 #include <TInterpreter.h>
 #include <TFile.h>
 #include <TH2.h>
+#include <TObjString.h>
 #include <iostream>
 
 //____________________________________________________________________
@@ -284,7 +285,7 @@ AliBaseAODTask::SetCentralityAxis(UShort_t n, Double_t* bins)
 void
 AliBaseAODTask::SetCentralityAxis(Short_t low, Short_t high)
 {
-  Short_t a[] = { low, high };
+  // Short_t a[] = { low, high };
   SetAxis(fCentAxis, (high-low), low, high);
 }
 
